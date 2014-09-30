@@ -68,7 +68,7 @@ def take_action(config,message):
 
     command = [config['monitor']['trigger_command'], repo]
     import subprocess
-    status = subprocess.call(command, shell=False)
+    status = subprocess.call(command)
     # FIXME: what to do if status is nonzero?
     if status != 0:
         print "***** YO! Command '%s' failed (status=%d)\n" % (command, status)
