@@ -1,0 +1,9 @@
+[Unit]
+Description=Refresh Kerberos credentials from keytab
+
+[Service]
+Type=oneshot
+User=rpmostreecompose
+Group=rpmostreecompose
+EnvironmentFile=/etc/sysconfig/rpm-ostree-toolbox
+ExecStart=/usr/bin/rpm-ostree-kinit -c $CONFIG
