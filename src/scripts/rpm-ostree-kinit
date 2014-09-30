@@ -39,7 +39,7 @@ def refresh_kerberos():
 
     kinit = ['kinit', principal, '-k', '-t', keytab]
     if verbose:
-        print '$ %s\n' % ' '.join(kinit)
+        print '$ %s\n' % subprocess.list2cmdline(kinit)
     subprocess.check_call(kinit)
 
 if __name__ == '__main__':
