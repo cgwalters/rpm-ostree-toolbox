@@ -44,7 +44,6 @@ Requires: libguestfs-xfs
 Requires:       cyrus-sasl-gssapi
 Requires:       python-saslwrapper
 Requires(pre):  shadow-utils
-Requires(pre):  %{_sbindir}/useradd
 Requires:       systemd-units
 Requires(post): systemd-units
 
