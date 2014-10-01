@@ -59,7 +59,7 @@ make install DESTDIR=%{buildroot} INSTALL="install -p -c"
 %pre
 getent group %{ostree_group} >/dev/null || groupadd -r %{ostree_group}
 getent passwd %{ostree_user} >/dev/null || \
-  useradd -r -g %{ostree_group} -d FIXME -s /sbin/nologin -c "RPM OStree Toolbox user" %{ostree_user}
+  useradd -r -g %{ostree_group} -d %{_localstatedir}/lib/%{name} -s /sbin/nologin -c "RPM OStree Toolbox user" %{ostree_user}
 
 %post
 /bin/systemctl daemon-reload >/dev/null 2>&1 || :
@@ -72,6 +72,13 @@ getent passwd %{ostree_user} >/dev/null || \
 %{_libdir}/%{name}/
 %{_datadir}/%{name}/
 %{_mandir}/man1/%{name}*.gz
+
+# FIXME: do we need to mkdir this?
+%dir %{_localstatedir}/lib/%{name}
+%attr(0755,%{ostree_user},%{ostree_group}) %{_localstatedir}/lib/%{name}
+
+# FIXME: we need to install this, probably in one of the Makefile.ams
+%config(noreplace) %{_sysconfdir}/sysconfig/%{name}
 
 %{_unitdir}/rpm-ostree-kinit.service
 %{_unitdir}/rpm-ostree-kinit.timer
