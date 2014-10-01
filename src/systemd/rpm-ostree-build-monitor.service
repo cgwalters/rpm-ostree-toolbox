@@ -6,5 +6,5 @@ After=rpm-ostree-kinit.service
 Type=simple
 User=rpmostreecompose
 Group=rpmostreecompose
-EnvironmentFile=/etc/sysconfig/rpm-ostree-toolbox
+EnvironmentFile=/etc/rpm-ostree-toolbox.conf
 ExecStart=/usr/bin/rpm-ostree-build-monitor -c $CONFIG
