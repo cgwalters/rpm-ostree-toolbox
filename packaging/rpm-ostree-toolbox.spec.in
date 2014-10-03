@@ -41,6 +41,7 @@ Requires: imagefactory-plugins-TinMan
 Requires: libguestfs-xfs
 %endif
 # Needed for rpmostree-build-monitor
+Requires:       python-qpid
 Requires:       cyrus-sasl-gssapi
 Requires:       python-saslwrapper
 Requires(pre):  shadow-utils
