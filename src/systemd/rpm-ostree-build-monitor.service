@@ -1,6 +1,6 @@
 [Unit]
 Description=Monitor message bus, trigger compose
-After=rpm-ostree-kinit.service
+Requires=rpm-ostree-kinit.timer
 
 [Service]
 Type=simple
