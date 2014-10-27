@@ -82,15 +82,15 @@ class TaskRunner(object):
     def _on_task_exited(self, proc, result, task):
         _,estatus = proc.wait_finish(result)
         task.endttime = GLib.get_monotonic_time()
+        taskname = task.taskdef.name
         try:
             GLib.spawn_check_exit_status(estatus)
             success = True
-            logging.info("task %s exited successfully" % (task.taskdef.name, ))
+            logging.info("task %s exited successfully" % (taskname, ))
+            os.remove(os.path.join(self._inbox_path.get_path(), taskname))
         except Exception, e:
-            logging.info("task %s exited with error: %s" % (task.taskdef.name, str(e)))
+            logging.info("task %s exited with error: %s" % (taskname, str(e)))
             success = False
-
-        taskname = task.taskdef.name
 
         del self._active[taskname]
 
