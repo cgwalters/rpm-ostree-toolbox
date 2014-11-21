@@ -30,7 +30,6 @@ import iniparse
 from .taskbase import TaskBase
 from .utils import run_sync, fail_msg
 
-
 def _rev2version(repo, rev):
     _,oldrev = repo.resolve_rev(rev, True)
     if oldrev is None:
@@ -136,6 +135,12 @@ class Treecompose(TaskBase):
                 os.makedirs(rpmostreecachedir)
         rpmostreecmd.append(self.jsonfilename)
 
+        if self.check_passwd:
+            rpmostreecmd.append('--check-passwd=' + self.check_passwd)
+
+        if self.check_groups:
+            rpmostreecmd.append('--check-groups=' + self.check_groups)
+
         subprocess.check_call(rpmostreecmd)
         _,newrev = self.repo.resolve_rev(self.ref, True)
         return (origrev, newrev)
@@ -147,10 +152,14 @@ def main(cmd):
                                      parents=[TaskBase.baseargs()])
     parser.add_argument('-p', '--profile', type=str, default='DEFAULT', help='Profile to compose (references a stanza in the config file)')
     parser.add_argument('-V', '--versioning', type=str, default='skip-or-refresh', help='Version to mark compose')
+    parser.add_argument('--check-passwd', type=str, default=None, help='File/commit to check passwd file against')
+    parser.add_argument('--check-groups', type=str, default=None, help='File/commit to check group file against')
     parser.add_argument('-v', '--verbose', action='store_true', help='verbose output')
     args = parser.parse_args()
     composer = Treecompose(args, cmd, profile=args.profile)
     composer.tree_version = args.versioning
+    composer.check_passwd = args.check_passwd
+    composer.check_groups = args.check_groups
     composer.show_config()
     origrev, newrev = composer.compose_tree()
 
