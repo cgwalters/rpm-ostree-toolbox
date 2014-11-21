@@ -141,7 +141,11 @@ class Treecompose(TaskBase):
         if self.check_groups:
             rpmostreecmd.append('--check-groups=' + self.check_groups)
 
-        subprocess.check_call(rpmostreecmd)
+        try:
+            subprocess.check_call(rpmostreecmd)
+        except subprocess.CalledProcessError:
+            return (origrev, origrev)
+
         _,newrev = self.repo.resolve_rev(self.ref, True)
         return (origrev, newrev)
 
