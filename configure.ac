@@ -1,5 +1,8 @@
 AC_PREREQ([2.63])
-AC_INIT([rpm-ostree-toolbox], [2014.106], [walters@verbum.org])
+
+define([VERSION_NUMBER], [2014.106])
+
+AC_INIT([rpm-ostree-toolbox], VERSION_NUMBER, [walters@verbum.org])
 AC_CONFIG_HEADER([config.h])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_AUX_DIR([build-aux])
@@ -40,7 +43,8 @@ AM_PATH_PYTHON
 GOBJECT_INTROSPECTION_REQUIRE([1.34.0])
 
 AC_CONFIG_FILES([
-Makefile
+        Makefile
+        src/py/rpmostreecompose/version.py
 ])
 AC_OUTPUT
 
