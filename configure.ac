@@ -1,8 +1,5 @@
 AC_PREREQ([2.63])
-
-define([VERSION_NUMBER], [2014.106])
-
-AC_INIT([rpm-ostree-toolbox], VERSION_NUMBER, [walters@verbum.org])
+AC_INIT([rpm-ostree-toolbox], [2014.106], [walters@verbum.org])
 AC_CONFIG_HEADER([config.h])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_AUX_DIR([build-aux])
