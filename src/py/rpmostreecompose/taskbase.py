@@ -25,7 +25,7 @@ import shutil
 import subprocess
 import distutils.spawn
 from gi.repository import Gio, OSTree, GLib
-import iniparse
+import ConfigParser
 from .utils import fail_msg
 
 class TaskBase(object):
@@ -51,22 +51,31 @@ class TaskBase(object):
                      'selinux': True
                    }
 
-        if not os.path.exists(configfile):
-            fail_msg("No config file: " + configfile)
-        settings = iniparse.ConfigParser()
-        
-        settings.read(configfile)
-        outputdir = settings.get('DEFAULT', 'outputdir', "")
-        if outputdir == "":
-            settings.set('DEFAULT', 'outputdir', os.getcwd())
+        if not os.path.isfile(configfile):
+            fail_msg("Not a config file: " + configfile)
+        settings = ConfigParser.ConfigParser()
+        try: 
+            settings.read(configfile)
+        except ConfigParser.ParsingError as e:
+            print "Error parsing your config file: {0}".format(configfile)
+            fail_msg("Eror message: {0}".format(e.message))
+
+        try:
+            outputdir = settings.get(profile, 'outputdir', "")
+        except (ConfigParser.NoOptionError, ConfigParser.NoSectionError), e:
+                try:
+                    outputdir = settings.get('DEFAULT', 'outputdir', "")
+                except:
+                    settings.set('DEFAULT', 'outputdir', os.getcwd())
+
         self.checkini(settings, profile, configfile)
         for attr in self.ATTRS:
             try:
                 val = settings.get(profile, attr)
-            except (iniparse.NoOptionError, iniparse.NoSectionError), e:
+            except (ConfigParser.NoOptionError, ConfigParser.NoSectionError), e:
                 try:
                     val = settings.get('DEFAULT', attr)
-                except iniparse.NoOptionError, e:
+                except ConfigParser.NoOptionError, e:
                     val = defaults.get(attr)
                     #print "Unable to find {0}, falling back to the value {1}".format(attr, val)
             print (attr, val)
@@ -134,6 +143,11 @@ class TaskBase(object):
             else:
                 self.util_tdl = args.util_tdl
 
+            # Check if the lorax outputdir already exists
+            lorax_outputdir = os.path.join(outputdir, "lorax")
+            if os.path.exists(lorax_outputdir):
+                fail_msg("The directory {0} already exists.  It must be removed or renamed so that lorax can be run".format(lorax_outputdir))
+
         if self.http_proxy:
             os.environ['http_proxy'] = self.http_proxy
 
@@ -155,7 +169,7 @@ class TaskBase(object):
    
     def checkini(self, settings, profile, configfile):
         # If a release is passed via -r and does not exist, error out
-        if not settings.has_section(profile):
+        if profile is not "DEFAULT" and not settings.has_section(profile):
             sections = settings.sections()
             fail_msg("Section {0} is not defined in your config file ({1}). Valid sections/profiles are {2}".format(
                 profile, configfile, sections))
