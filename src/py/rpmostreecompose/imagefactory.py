@@ -42,7 +42,7 @@ import logging
 
 from .taskbase import ImageTaskBase
 
-from .utils import run_sync, fail_msg, TrivialHTTP, log
+from .utils import run_sync, fail_msg, TrivialHTTP, log, checkOSTree
 
 
 class ImgBuilder(object):
@@ -227,6 +227,47 @@ class AbstractImageFactoryTask(ImageTaskBase):
         log("Oz overrides: {0}".format(self.ozoverrides))
 
     def formatKS(self, ksfile):
+        # TODO: Pull kickstart from separate git repo
+        substitutions = { 'OSTREE_REF':  self.ref,
+                          'OSTREE_OSNAME':  self.os_name}
+
+        substitutions['OSTREE_PORT'] = self.httpd_port
+
+        if not self.ostree_repo_is_remote:
+            host_ip = getDefaultIP(hostnet=self.virtnetwork)
+        else:
+            host_ip = self.httpd_host
+
+        # fallback
+        if host_ip is None:
+            log("notice: unable to determine libvirt network, using 192.168.122.1")
+            host_ip = '192.168.122.1'
+
+        substitutions['OSTREE_HOST_IP'] = host_ip
+
+        substitutions['OSTREE_PATH'] = self.httpd_path
+
+
+        if not self.ostree_repo_is_remote:
+            # Commenting out until I understand the full ramifications
+            # of doing so.
+
+            # ostree_location = "file:///install/ostree"
+            ostree_location = "http://{0}:{1}/{2}".format(host_ip, self.httpd_port, self.httpd_path)
+            local_path = "({0})".format(self.ostree_repo)
+            log("Using local {0}".format(ostree_location))
+        else:
+            ostree_location = self.ostree_repo
+            local_path = ""
+        substitutions['OSTREE_LOCATION'] = ostree_location
+
+        # Test connectivity to the the ostree repository.  Here we look for
+        # for the repository's /config file.
+        if not checkOSTree(ostree_location):
+            fail_msg("Unable to verify find {0}/config {1} and verify it as an ostree repository.  Please check your repository and re-run".format(ostree_location, local_path))
+        else:
+            log("Verified OSTree repository: {0}".format(ostree_location))
+
         ksfile = os.path.abspath(ksfile)
         ks_basename = os.path.basename(ksfile)
         # FIXME - eventually stop hardcoding this via some mapping
@@ -253,34 +294,6 @@ class AbstractImageFactoryTask(ImageTaskBase):
         flattened_ks = self.workdir + '/' + ks_basename
         os.rename(contextdir + '/' + ks_basename, flattened_ks)
 
-        # TODO: Pull kickstart from separate git repo
-        substitutions = { 'OSTREE_REF':  self.ref,
-                          'OSTREE_OSNAME':  self.os_name}
-
-        substitutions['OSTREE_PORT'] = self.httpd_port
-
-        if not self.ostree_repo_is_remote:
-            host_ip = getDefaultIP(hostnet=self.virtnetwork)
-        else:
-            host_ip = self.httpd_host
-
-        # fallback
-        if host_ip is None:
-            log("notice: unable to determine libvirt network, using 192.168.122.1")
-            host_ip = '192.168.122.1'
-
-        substitutions['OSTREE_HOST_IP'] = host_ip
-
-        substitutions['OSTREE_PATH'] = self.httpd_path
-
-        local_http_location = "http://{0}:{1}/{2}".format(host_ip, self.httpd_port, self.httpd_path)
-        log("Using local http: {0}".format(local_http_location))
-
-        if not self.ostree_repo_is_remote:
-            ostree_location = "file:///install/ostree"
-        else:
-            ostree_location = local_http_location
-        substitutions['OSTREE_LOCATION'] = ostree_location
 
         # Always replace the URL with the local repo.  If we're
         # running the imagefactory command here, we expect to be using local.
@@ -296,7 +309,7 @@ class AbstractImageFactoryTask(ImageTaskBase):
                     newbuf.write(line)
                     continue
                 newbuf.write(m.group(1))
-                newbuf.write('--url="{0}"'.format(local_http_location))
+                newbuf.write('--url="{0}"'.format(ostree_location))
                 newbuf.write(m.group(2))
                 
         return newbuf.getvalue()

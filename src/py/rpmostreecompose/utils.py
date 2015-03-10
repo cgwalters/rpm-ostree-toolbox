@@ -22,6 +22,7 @@ import subprocess
 import os
 import signal
 import ctypes
+import urllib2
 
 def fail_msg(msg):
     if False:
@@ -39,6 +40,15 @@ def log(msg):
     sys.stdout.write(msg)
     sys.stdout.write('\n')
     sys.stdout.flush()
+
+def checkOSTree(url):
+    url = url + "/config"
+    try:
+        f = urllib2.urlopen(url)
+    except:
+        return False
+
+    return True
 
 class TrivialHTTP(object):
     """ This class is used to control ostree's trivial-httpd which is used
