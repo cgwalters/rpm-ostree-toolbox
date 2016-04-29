@@ -475,7 +475,7 @@ class ImageFactoryTask(AbstractImageFactoryTask):
         imgopts['vsphere_product_name'] = self.vsphere_product_name
         imgopts['vsphere_product_vendor_name'] = self.vsphere_product_vendor_name
         imgopts['vsphere_product_version'] = self.vsphere_product_version
-        imgopts['vsphere_product_version'] = self.vsphere_virtual_system_type
+        imgopts['vsphere_virtual_system_type'] = self.vsphere_virtual_system_type
 
         target_image = self.builder.buildimagetype(imagetype, image.identifier, imgopts=imgopts)
         infile = target_image.data
