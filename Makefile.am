@@ -37,6 +37,7 @@ typelibdir = $(pkglibdir)/girepository-1.0
 typelib_DATA = $(gir_DATA:.gir=.typelib)
 
 include Makefile-libtoolbox.am
+include Makefile-pyrpmostree.am
 include Makefile-toolbox.am
 
 pylint:
